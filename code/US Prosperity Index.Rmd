@@ -1,0 +1,7 @@
+---
+title: "US Prosperity Index"
+author: "Ed Wickstead"
+date: "14/02/2022"
+output: html_document
+---
+
