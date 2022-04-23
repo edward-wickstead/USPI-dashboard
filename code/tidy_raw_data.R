@@ -6,7 +6,6 @@ library(broom)
 library(rgeos)
 
 
-
 # Load raw data -----------------------------------------------------------
 
 sheet_names = c("Prosperity Index",
@@ -179,59 +178,3 @@ subset_measures <- function(dataframe, measures_to_subset) {
   return(dataframe)
   
 }
-
-
-# Summarise indicator coverage --------------------------------------------
-
-
-
-# Check missing areas -----------------------------------------------------
-
-check_missing_areas <- function(dataframe, 
-                                expected_areas = area_lookup$area_name, 
-                                missing_all_only = TRUE,
-                                hide_missing_years = TRUE,
-                                summarise_by_measure = FALSE,
-                                summarise_by_area = FALSE) {
-  
-  ## Temporary dataframe simulating missing data
-  dataframe <- combined_measures %>% 
-    filter(measure_type == "raw_value") %>% 
-    select(-measure_type, -rank) %>% 
-    slice_sample(n = (nrow(.) * 0.8))
-  
-  return_dataframe <- dataframe %>% 
-    group_by(measure_name) %>% 
-    complete(area_name = expected_areas, year)
-  
-  if (missing_all_only) {
-    
-    hide_missing_years = FALSE
-    
-    return_dataframe <- return_dataframe %>% 
-      group_by(area_name, measure_name) %>% 
-      summarise(missing_all = if_else(sum(!is.na(value)) == 0, TRUE, FALSE)) %>% 
-      filter(missing_all == TRUE) %>% 
-      ungroup() %>% 
-      select(-missing_all) %>% 
-      arrange(area_name, measure_name)
-    
-  } else {
-    
-    return_dataframe <- return_dataframe %>% 
-      filter(is.na(value)) %>% 
-      select(-value) %>% 
-      arrange(area_name, measure_name, desc(year))
-    
-    }
-  
-  if (hide_missing_years) {
-    return_dataframe <- return_dataframe %>%
-      select(-year) %>% 
-      unique()
-    }
-  
-  return(return_dataframe)
-  
-}
-
